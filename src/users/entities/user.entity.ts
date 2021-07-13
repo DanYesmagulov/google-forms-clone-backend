@@ -1,5 +1,14 @@
+import { Token } from './token.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { Table, Model, Column, DataType } from 'sequelize-typescript';
+import {
+  Table,
+  Model,
+  Column,
+  DataType,
+  BelongsTo,
+  ForeignKey,
+  HasOne,
+} from 'sequelize-typescript';
 
 interface UserCreationAttributes {
   email: string;
@@ -38,4 +47,13 @@ export class User extends Model<User, UserCreationAttributes> {
     defaultValue: false,
   })
   isActive: boolean;
+
+  @ApiProperty({ example: 'asd', description: 'activation link' })
+  @Column({
+    type: DataType.STRING,
+  })
+  activationLink: string;
+
+  @HasOne(() => Token)
+  token: Token;
 }

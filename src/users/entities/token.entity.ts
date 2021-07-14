@@ -7,7 +7,6 @@ import {
   DataType,
   BelongsTo,
   ForeignKey,
-  HasOne,
 } from 'sequelize-typescript';
 
 interface TokenCreationAttributes {

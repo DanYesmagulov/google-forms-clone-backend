@@ -27,7 +27,12 @@ export class AuthService {
 
   async login(dto: CreateUserDto) {
     const user = await this.validateUser(dto);
-    return this.generateTokens(user);
+    const tokens = await this.generateTokens(user);
+
+    return {
+      ...tokens,
+      user,
+    };
   }
 
   async registration(dto: CreateUserDto) {
@@ -89,13 +94,19 @@ export class AuthService {
 
   private async validateUser(dto: CreateUserDto) {
     const user = await this.usersService.getUserByEmail(dto.email);
-    const passwordEquals = await bcrypt.compare(dto.password, user.password);
-    if (user && passwordEquals) {
-      return user;
+    if (!user) {
+      throw new HttpException(
+        'User with this email not found',
+        HttpStatus.BAD_REQUEST,
+      );
     }
-    throw new UnauthorizedException({
-      message: 'Email or password not correct',
-    });
+
+    const passwordEquals = await bcrypt.compare(dto.password, user.password);
+    if (!passwordEquals) {
+      throw new HttpException('Password not correct', HttpStatus.BAD_REQUEST);
+    }
+
+    return user;
   }
 
   private async sendEmail(to, link) {
@@ -118,7 +129,10 @@ export class AuthService {
       activationLink,
     );
     if (!user) {
-      throw new Error('Authorization link not correct');
+      throw new HttpException(
+        'Authorization link not correct',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     user.isActive = true;
     await this.userRepository.update(
@@ -131,7 +145,49 @@ export class AuthService {
     );
   }
 
-  async logout() {}
+  async logout(refreshToken: string) {
+    const token = await this.tokenRepository.destroy({
+      where: { refreshToken },
+    });
+    return token;
+  }
 
-  async refresh() {}
+  async refresh(refreshToken: string) {
+    if (!refreshToken) {
+      throw new UnauthorizedException();
+    }
+    const user = await this.validatRefreshToken(refreshToken);
+    const tokenFromDb = await this.tokenRepository.findOne({
+      where: { refreshToken },
+    });
+    if (!user || !tokenFromDb) {
+      throw new UnauthorizedException();
+    }
+
+    const userData = await this.userRepository.findOne({
+      where: { id: user.id },
+    });
+    const userDto = new RegistrationResponceUserDto(userData);
+    const tokens = await this.generateTokens(user);
+    await this.saveToken(user.id, tokens.refreshToken);
+
+    return {
+      ...tokens,
+      user: userDto,
+    };
+  }
+
+  validateAccessToken(token) {
+    const user = this.jwtService.verify(token, {
+      secret: process.env.PRIVATE_KEY,
+    });
+    return user;
+  }
+
+  validatRefreshToken(token) {
+    const user = this.jwtService.verify(token, {
+      secret: process.env.JWT_REFRESH_SECRET,
+    });
+    return user;
+  }
 }

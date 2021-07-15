@@ -1,3 +1,4 @@
+import { UserAnswers, Question, Form, CompletedTest, Answer } from './entities';
 import { Token } from './users/entities/token.entity';
 import { User } from './users/entities/user.entity';
 import { Module } from '@nestjs/common';
@@ -6,6 +7,8 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { FormModule } from './form/form.module';
+import { AnswerModule } from './answer/answer.module';
 
 @Module({
   imports: [
@@ -19,7 +22,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DATABASE,
-      models: [User, Token],
+      models: [User, Token, Answer, CompletedTest, Form, Question, UserAnswers],
       autoLoadModels: true,
     }),
     MailerModule.forRoot({
@@ -38,6 +41,8 @@ import { MailerModule } from '@nestjs-modules/mailer';
     }),
     UsersModule,
     AuthModule,
+    FormModule,
+    AnswerModule,
   ],
 })
 export class AppModule {}

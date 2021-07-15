@@ -1,3 +1,5 @@
+import { CompletedTest } from './../../entities/completed_test.entity';
+import { UserAnswers } from './../../entities/user_answers.entity';
 import { Token } from './token.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -5,10 +7,10 @@ import {
   Model,
   Column,
   DataType,
-  BelongsTo,
-  ForeignKey,
   HasOne,
+  HasMany,
 } from 'sequelize-typescript';
+import { Form } from 'src/entities/form.entity';
 
 interface UserCreationAttributes {
   email: string;
@@ -56,4 +58,13 @@ export class User extends Model<User, UserCreationAttributes> {
 
   @HasOne(() => Token)
   token: Token;
+
+  @HasMany(() => Form)
+  form: Form;
+
+  @HasMany(() => UserAnswers)
+  userAnswers: UserAnswers;
+
+  @HasMany(() => CompletedTest)
+  completedTest: CompletedTest;
 }

@@ -1,0 +1,43 @@
+version: '3.8'
+
+networks:
+  app:
+    name: exam-app
+
+services:
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    hostname: mailhog
+    ports:
+      - 1025:1025
+      - 8025:8025
+    networks:
+      - app
+
+  postgres:
+    image: postgres:12.3-alpine
+    container_name: postgres
+    hostname: postgres
+    environment:
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=google-forms
+    ports:
+      - 5432:5432
+    networks:
+      - app
+
+  app:
+    build:
+      dockerfile: docker/app/Dockerfile
+      context: .
+    container_name: exam.app
+    hostname: exam.app
+    volumes:
+      - ./src:/app/src
+    environment:
+      - MODE=dev
+    ports:
+      - 3000:3000
+    networks:
+      - app

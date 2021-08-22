@@ -36,6 +36,7 @@
     "cookie-parser": "^1.4.5",
     "cross-env": "^7.0.3",
     "dotenv": "^10.0.0",
+    "nestjs-command": "^2.0.1",
     "nodemailer": "^6.6.2",
     "pg": "^8.6.0",
     "pg-hstore": "^2.3.4",
